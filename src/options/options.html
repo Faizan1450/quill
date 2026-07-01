@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draftly Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="settings-container">
+    <div class="settings-layout">
+      <!-- Left Sidebar -->
+      <aside class="settings-sidebar">
+        <div class="logo-area">
+          <div class="logo-icon">D</div>
+          <h2>Draftly</h2>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <button type="button" class="sidebar-item active" data-tab="general">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+              <path d="m370-80-16-128q-13-5-24.5-12T307-237l-119 50L78-375l103-78q-1-7-1-13.5t1-13.5l-103-78 110-188 119 50q11-8 23-15t24.5-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 188-103 78q1 7 1 13.5t-1 13.5l103 78-110 188-119-50q-11 8-22.5 15t-24.5 12L590-80H370Zm112-260q58 0 99-41t41-99q0-58-41-99t-99-41q-58 0-99 41t-41 99q0 58 41 99t99 41Z"/>
+            </svg>
+            <span>General</span>
+          </button>
+          
+          <button type="button" class="sidebar-item" data-tab="style">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+              <path d="M80-80v-720q0-33 23.5-56.5T160-880h480l240 240v560q0 33-23.5 56.5T800-80H80Zm560-520v-200H160v640h640V-600H640ZM240-200h480v-80H240v80Zm0-160h480v-80H240v80Zm0-160h320v-80H240v80Z"/>
+            </svg>
+            <span>Your Style</span>
+          </button>
+          
+          <button type="button" class="sidebar-item" data-tab="appearance">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+              <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Z"/>
+            </svg>
+            <span>Appearance</span>
+          </button>
+          
+          <button type="button" class="sidebar-item" data-tab="about">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+              <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/>
+            </svg>
+            <span>About</span>
+          </button>
+        </nav>
+        
+        <div class="sidebar-footer">
+          <span class="version-tag">v1.0.0</span>
+        </div>
+      </aside>
+
+      <!-- Right Panels Content -->
+      <main class="settings-main">
+        <form id="settings-form">
+          <!-- 1. GENERAL PANEL -->
+          <div class="settings-panel active" id="panel-general">
+            <div class="panel-header">
+              <h2>General Settings</h2>
+              <p class="panel-description">Configure your Gemini API key and basic comment generation styles.</p>
+            </div>
+
+            <!-- API Credentials -->
+            <div class="settings-card">
+              <h3>API Credentials</h3>
+              <p class="card-description">Your Gemini API key is stored locally on your device and never sent elsewhere.</p>
+              
+              <div class="form-group">
+                <label for="api-key">Gemini API Key</label>
+                <div class="input-wrapper">
+                  <input type="password" id="api-key" placeholder="Paste your Gemini API key here" autocomplete="off" />
+                  <button type="button" id="toggle-key-visibility" class="btn-icon" title="Toggle Visibility">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+                      <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q74-138 194-219t266-81q146 0 266 81.5T920-500q-74 138-194 219t-266 81Zm0-72q119 0 220.5-65.5T844-500q-43-107-144.5-172.5T480-738q-119 0-220.5 65.5T116-500q43 107 144.5 172.5T480-272Zm0-228Z"/>
+                    </svg>
+                  </button>
+                </div>
+                <span id="api-key-status" class="key-status"></span>
+                <span class="help-text">
+                  Get a free key from <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
+                </span>
+              </div>
+            </div>
+
+            <!-- Generation Preferences -->
+            <div class="settings-card">
+              <h3>Generation Preferences</h3>
+              <p class="card-description">Default settings for comment generation.</p>
+
+              <div class="form-group">
+                <label class="section-subtitle">Default Tone</label>
+                <div class="segmented-control tone-picker">
+                  <label class="segmented-option">
+                    <input type="radio" name="tone" value="professional" checked />
+                    <div class="option-content">
+                      <span class="option-title">Professional</span>
+                      <span class="option-desc">Polished and measured.</span>
+                    </div>
+                  </label>
+                  <label class="segmented-option">
+                    <input type="radio" name="tone" value="casual" />
+                    <div class="option-content">
+                      <span class="option-title">Casual</span>
+                      <span class="option-desc">Relaxed and conversational.</span>
+                    </div>
+                  </label>
+                  <label class="segmented-option">
+                    <input type="radio" name="tone" value="insightful" />
+                    <div class="option-content">
+                      <span class="option-title">Insightful</span>
+                      <span class="option-desc">Adds a sharp point or perspective.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group default-length-group">
+                <label class="section-subtitle">Default Length</label>
+                <div class="segmented-control length-picker">
+                  <label class="segmented-option-mini">
+                    <input type="radio" name="default-length" value="short" />
+                    <span class="mini-label">Short</span>
+                  </label>
+                  <label class="segmented-option-mini">
+                    <input type="radio" name="default-length" value="medium" checked />
+                    <span class="mini-label">Medium</span>
+                  </label>
+                  <label class="segmented-option-mini">
+                    <input type="radio" name="default-length" value="long" />
+                    <span class="mini-label">Long</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="toggle-group">
+                <div class="toggle-item">
+                  <div class="toggle-info">
+                    <label for="emoji">Allow emojis in comments</label>
+                    <p class="toggle-desc">Off by default — keeps comments looking human, not auto-generated.</p>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="emoji">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                
+                <div class="toggle-item">
+                  <div class="toggle-info">
+                    <label for="end-with-question">End with a question</label>
+                    <p class="toggle-desc">When on, generated comments will end with a relevant follow-up question.</p>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="end-with-question">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save General Settings</button>
+            </div>
+          </div>
+
+          <!-- 2. YOUR STYLE PANEL -->
+          <div class="settings-panel" id="panel-style">
+            <div class="panel-header">
+              <h2>Your Style</h2>
+              <p class="panel-description">Teach Draftly how you write, so comments sound like you.</p>
+            </div>
+
+            <!-- Voice context -->
+            <div class="settings-card">
+              <h3>How you write</h3>
+              <p class="card-description">Describe your unique professional perspective and style.</p>
+              
+              <div class="form-group">
+                <div class="label-with-counter">
+                  <label for="voice-context">Your writing voice profile</label>
+                  <span id="voice-counter-display" class="char-counter">0/1000</span>
+                </div>
+                <textarea id="voice-context" maxlength="1000" rows="6" placeholder="Example: I'm a full-stack developer who teaches. I write short, direct, no fluff. I avoid corporate buzzwords and sometimes use light humor."></textarea>
+                <span class="help-text">Describe how you write. Max 1000 characters.</span>
+              </div>
+            </div>
+
+            <!-- Comment Examples -->
+            <div class="settings-card">
+              <h3>Your comment examples</h3>
+              <p class="card-description">Add real examples of comments you've written in the past.</p>
+              
+              <div class="examples-shell">
+                <div class="label-with-counter" style="margin-bottom: 6px;">
+                  <label for="example-comment-input" style="font-size: 12px; color: var(--draftly-text-muted);">New Example</label>
+                  <span id="example-char-counter" class="char-counter">0/300</span>
+                </div>
+                <div class="example-input-row">
+                  <input type="text" id="example-comment-input" maxlength="300" placeholder="Type or paste a sample comment here..." />
+                  <button type="button" id="btn-add-example" class="btn-secondary">Add Example</button>
+                </div>
+                <div id="example-limit-note" class="help-text" style="display: none; color: var(--draftly-text-muted);">Maximum 5 examples reached.</div>
+                <div id="example-char-limit-note" class="help-text" style="display: none; color: var(--draftly-danger);">Keep examples under 300 characters.</div>
+                <div id="examples-list" class="examples-list-shell">
+                  <!-- Will be rendered dynamically -->
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save Style Settings</button>
+            </div>
+          </div>
+
+          <!-- 3. APPEARANCE PANEL -->
+          <div class="settings-panel" id="panel-appearance">
+            <div class="panel-header">
+              <h2>Appearance</h2>
+              <p class="panel-description">Customize the look and feel of Draftly.</p>
+            </div>
+
+            <!-- Theme Mode -->
+            <div class="settings-card">
+              <h3>Theme</h3>
+              <p class="card-description">Choose your preferred reading mode.</p>
+              
+              <div class="segmented-control theme-picker">
+                <label class="segmented-option-mini">
+                  <input type="radio" name="theme-mode" value="light" />
+                  <span class="mini-label">Light</span>
+                </label>
+                <label class="segmented-option-mini">
+                  <input type="radio" name="theme-mode" value="dark" />
+                  <span class="mini-label">Dark</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Color Palette Swatches -->
+            <div class="settings-card">
+              <h3>Color Palette</h3>
+              <p class="card-description">Select your accent color. Applies live across the entire extension UI.</p>
+              
+              <div class="palette-grid">
+                <button type="button" class="palette-swatch" data-color="teal" style="background-color: #0D9488;" title="Teal"></button>
+                <button type="button" class="palette-swatch" data-color="crimson" style="background-color: #BE123C;" title="Crimson"></button>
+                <button type="button" class="palette-swatch" data-color="gold" style="background-color: #CA8A04;" title="Gold"></button>
+                <button type="button" class="palette-swatch" data-color="ocean" style="background-color: #0369A1;" title="Ocean"></button>
+                <button type="button" class="palette-swatch" data-color="pink" style="background-color: #EC4899;" title="Pink"></button>
+              </div>
+            </div>
+
+            <!-- Static Preview Card -->
+            <div class="settings-card">
+              <h3>Preview</h3>
+              <p class="card-description">Sample comment card showing your active palette.</p>
+              
+              <div class="preview-card-wrap">
+                <div class="preview-variation-card">
+                  <div class="preview-variation-num">Professional &middot; Short</div>
+                  <p class="preview-variation-text">Congrats on the launch &mdash; the focus on real user problems really shows 👌</p>
+                  <div class="preview-actions">
+                    <button type="button" class="preview-btn-primary">Paste</button>
+                    <button type="button" class="preview-btn-secondary">Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. ABOUT PANEL -->
+          <div class="settings-panel" id="panel-about">
+            <div class="panel-header">
+              <h2>About</h2>
+              <p class="panel-description">Information about Draftly and its developer.</p>
+            </div>
+
+            <div class="settings-card about-card">
+              <!-- 1. IDENTITY HEADER -->
+              <div class="about-identity-header">
+                <div class="about-logo-wrap">
+                  <div class="logo-icon about-logo">D</div>
+                  <span class="about-title-name">Draftly</span>
+                  <span class="about-version-pill">v1.0.0</span>
+                </div>
+                <p class="about-tagline-text">AI-powered LinkedIn comments in your voice.</p>
+              </div>
+              
+              <div class="about-divider"></div>
+
+              <!-- 2. DEVELOPER BLOCK -->
+              <div class="about-developer-section">
+                <p class="about-dev-intro">Built by <a href="https://www.linkedin.com/in/faizan1450/" target="_blank" rel="noopener noreferrer" class="about-name-highlight">Syed Faizan Ali</a>, Integration Developer at Accenture.</p>
+                <p class="about-dev-sub">I build practical tools on the side to make everyday workflows smoother and more automated.</p>
+                
+                <div class="social-links about-social-links">
+                  <a href="https://www.linkedin.com/in/faizan1450/" target="_blank" rel="noopener noreferrer" class="social-link" title="LinkedIn" aria-label="LinkedIn Profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                  </a>
+                  <a href="https://www.instagram.com/faizan_1450/" target="_blank" rel="noopener noreferrer" class="social-link" title="Instagram" aria-label="Instagram Profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                  </a>
+                  <a href="https://github.com/Faizan1450" target="_blank" rel="noopener noreferrer" class="social-link" title="GitHub" aria-label="GitHub Profile">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                  </a>
+                  <a href="https://faizan1450.github.io/Portfolio/" target="_blank" rel="noopener noreferrer" class="social-link" title="Portfolio" aria-label="Developer Portfolio">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  </a>
+                  <a href="mailto:syedfaizanali1450+draftly@gmail.com" class="social-link" title="Email" aria-label="Send Email">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  </a>
+                </div>
+              </div>
+
+              <div class="about-divider"></div>
+
+              <!-- 3. PRIVACY & EXPECTATIONS BLOCK -->
+              <div class="about-privacy-callout">
+                <div class="callout-header">
+                  <svg class="callout-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  <h4>Privacy & Expectations</h4>
+                </div>
+                <ul class="callout-list">
+                  <li>Your API key is stored locally on your device. Draftly sends post text to Google's Gemini API using your key. There are no Draftly servers and no data is collected.</li>
+                  <li>Comments are drafts for your review. Nothing is posted automatically.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <!-- Save Notification Toast -->
+    <div id="save-toast" class="toast hidden">
+      <svg class="toast-icon" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+        <path d="m382-354 339-339q12-12 28-12t28 12q12 12 12 28.5T777-636L410-268q-12 12-28 12t-28-12L183-439q-12-12-11.5-28.5T184-496q12-12 28.5-12t28.5 12l141 142Z"/>
+      </svg>
+      Settings saved successfully!
+    </div>
+  </div>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
