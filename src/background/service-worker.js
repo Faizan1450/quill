@@ -205,7 +205,6 @@ function parseVariations(rawText) {
  * @returns {Promise<{ ok: boolean, variations?: string[], error?: string }>}
  */
 async function callGemini(payload) {
-  console.log("[Draftly] callGemini START");
   // Read API key from storage (never exposed to content script context)
   const settings = await getSettings();
   const apiKey = settings.apiKey;
@@ -218,6 +217,8 @@ async function callGemini(payload) {
   const voiceContext = settings.voiceContext || '';
   const useEmoji = payload.emoji !== undefined ? payload.emoji : !!settings.emoji;
   const useQuestion = payload.endWithQuestion !== undefined ? payload.endWithQuestion : !!settings.endWithQuestion;
+
+  console.log(`[Draftly] callGemini START: tone=${tone}, length=${payload.length || 'medium'}, emoji=${useEmoji}, questions=${useQuestion}`);
 
   const prompt = buildPrompt({
     author: payload.author,
