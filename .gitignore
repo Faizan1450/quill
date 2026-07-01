@@ -1,0 +1,12 @@
+# OS metadata files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+
+# Local credentials / keys
+*.local
+*.key
+credentials.json
