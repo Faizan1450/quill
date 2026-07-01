@@ -57,7 +57,7 @@ chrome.action.onClicked.addListener(() => {
 // Gemini API integration
 // ============================================================
 
-const GEMINI_MODEL = 'gemini-3-flash';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 /**
@@ -141,6 +141,7 @@ Here are real comments the user has written. Study their tone, sentence length, 
 - Sound like a real human: conversational, direct, no corporate jargon, no buzzwords.
 - NEVER use these generic fillers as standalone openers or as the entire comment: "Great post!", "Thanks for sharing", "Well said", "Couldn't agree more", "Love this", "So true". You may use similar sentiments ONLY if followed immediately by a specific, substantive point.
 - NO hashtags. NO bullet points or numbered lists.
+- Plain text ONLY. Absolutely NO markdown formatting of any kind, such as asterisks for bold or italics (e.g. do not write *unforeseen* or **crucial**).
 - Vary sentence structure across the 3 variations. Do not start all three the same way.
 - Stay within the ${wordTarget} target. Comments that are LinkedIn-appropriate in tone but not stiff.`;
 
@@ -214,8 +215,9 @@ async function callGemini(payload) {
   }
 
   const tone = payload.tone || settings.tone || 'professional';
-  const emoji = !!settings.emoji;
   const voiceContext = settings.voiceContext || '';
+  const useEmoji = payload.emoji !== undefined ? payload.emoji : !!settings.emoji;
+  const useQuestion = payload.endWithQuestion !== undefined ? payload.endWithQuestion : !!settings.endWithQuestion;
 
   const prompt = buildPrompt({
     author: payload.author,
@@ -223,15 +225,18 @@ async function callGemini(payload) {
     length: payload.length,
     guideline: payload.guideline,
     tone,
-    emoji: payload.emoji !== undefined ? payload.emoji : !!settings.emoji,
-    endWithQuestion: payload.endWithQuestion !== undefined ? payload.endWithQuestion : !!settings.endWithQuestion,
+    emoji: useEmoji,
+    endWithQuestion: useQuestion,
     voiceContext,
     commentExamples: settings.commentExamples || []
   });
 
   const requestBody = {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.9 },
+    generationConfig: {
+      temperature: 0.9,
+      maxOutputTokens: 600
+    },
   };
 
   try {
