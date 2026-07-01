@@ -16,10 +16,10 @@ async function updateExtensionIcon(themeColor) {
   try {
     await chrome.action.setIcon({
       path: {
-        "16": `icons/${color}/icon16.png`,
-        "32": `icons/${color}/icon32.png`,
-        "48": `icons/${color}/icon48.png`,
-        "128": `icons/${color}/icon128.png`
+        "16": `/icons/${color}/icon16.png`,
+        "32": `/icons/${color}/icon32.png`,
+        "48": `/icons/${color}/icon48.png`,
+        "128": `/icons/${color}/icon128.png`
       }
     });
     console.log(`[Draftly] Toolbar icon set to: ${color}`);
