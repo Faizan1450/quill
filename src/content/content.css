@@ -130,6 +130,12 @@
   position: sticky;
   top: 0;
   z-index: 1;
+  cursor: grab;
+  user-select: none;
+}
+
+.draftly-panel.draftly-dragging .draftly-panel-header {
+  cursor: grabbing;
 }
 
 .draftly-panel-title {

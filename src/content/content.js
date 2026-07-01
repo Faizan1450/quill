@@ -732,9 +732,8 @@ function renderVariationCards(resultsEl, variations, commentBox, regenerateFn) {
  * Runs the full generate flow: loading → API call → render cards or error.
  * Called by both Generate and Regenerate.
  */
-async function doGenerate(resultsEl, postContext, length, guideline, emoji, endWithQuestion, tone, commentBox, panel, iconRect, generateBtn) {
+async function doGenerate(resultsEl, postContext, length, guideline, emoji, endWithQuestion, tone, commentBox, panel, iconRect, generateBtn, triggerGenerate) {
   const openSettings = () => chrome.runtime.sendMessage({ action: 'openOptions' });
-  const retry = () => doGenerate(resultsEl, postContext, length, guideline, emoji, endWithQuestion, tone, commentBox, panel, iconRect, generateBtn);
   const reloadPage = () => location.reload();
 
   // 1. Fail fast: check if key is set before loading spinner
@@ -762,6 +761,10 @@ async function doGenerate(resultsEl, postContext, length, guideline, emoji, endW
     showInlineError(resultsEl, msg, [
       { label: 'Open Settings', onClick: openSettings }
     ]);
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<span class="draftly-generate-icon">✨</span> Try Again';
+    }
     requestAnimationFrame(() => positionPanel(panel, iconRect));
     return;
   }
@@ -778,20 +781,23 @@ async function doGenerate(resultsEl, postContext, length, guideline, emoji, endW
 
   const result = await requestVariations(postContext, length, guideline, emoji, endWithQuestion, tone);
 
-  // Restore button
-  if (generateBtn) {
-    generateBtn.disabled = false;
-    generateBtn.innerHTML = '<span class="draftly-generate-icon">✨</span> Generate';
-  }
-
   if (result.ok && result.variations) {
-    renderVariationCards(resultsEl, result.variations, commentBox, retry);
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<span class="draftly-generate-icon">✨</span> Generate';
+    }
+    renderVariationCards(resultsEl, result.variations, commentBox, triggerGenerate);
   } else {
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = '<span class="draftly-generate-icon">✨</span> Try Again';
+    }
+
     const code = result.error;
     const msg = errorMessage(code);
     log('generate failed:', code);
 
-    // Map each code to its specific button configuration
+    // Map each code to its specific button configuration (excluding redundant "Try Again")
     let actions = [];
     if (code === 'no-key') {
       actions = [
@@ -799,17 +805,11 @@ async function doGenerate(resultsEl, postContext, length, guideline, emoji, endW
       ];
     } else if (code === 'auth-error') {
       actions = [
-        { label: 'Open Settings', onClick: openSettings },
-        { label: 'Try Again', onClick: retry }
+        { label: 'Open Settings', onClick: openSettings }
       ];
     } else if (code === 'extension-error') {
       actions = [
         { label: 'Reload Page', onClick: reloadPage }
-      ];
-    } else {
-      // rate-limit, api-error, network-error, empty-response, parse-failure, timeout
-      actions = [
-        { label: 'Try Again', onClick: retry }
       ];
     }
 
@@ -826,6 +826,9 @@ async function doGenerate(resultsEl, postContext, length, guideline, emoji, endW
  * @param {DOMRect} iconRect
  */
 function positionPanel(panel, iconRect) {
+  if (panel.dataset.dragged === 'true') {
+    return;
+  }
   const margin = 10;
   const panelW = 340;
   const panelH = panel.offsetHeight || 280;
@@ -965,6 +968,63 @@ async function openPanel(commentBox, iconEl, postContext) {
   header.appendChild(headerActions);
   panel.appendChild(header);
 
+  // ======== Make Panel Draggable by Header ========
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let startLeft = 0;
+  let startTop = 0;
+
+  header.addEventListener('mousedown', (e) => {
+    // Exclude gearBtn and closeBtn
+    if (e.target.closest('.draftly-panel-gear') || e.target.closest('.draftly-panel-close')) {
+      return;
+    }
+
+    isDragging = true;
+    panel.classList.add('draftly-dragging');
+
+    // Get current fixed coordinates of the panel
+    const rect = panel.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop = rect.top;
+
+    startX = e.clientX;
+    startY = e.clientY;
+
+    e.preventDefault(); // Prevent text selection/drag behaviors
+
+    const handleMouseMove = (moveEvent) => {
+      if (!isDragging) return;
+      panel.dataset.dragged = 'true';
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+
+      let newLeft = startLeft + dx;
+      let newTop = startTop + dy;
+
+      // Clamping coordinates so the header and panel remain visible in the viewport
+      const panelWidth = panel.offsetWidth || 340;
+      const headerHeight = header.offsetHeight || 40;
+
+      newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - panelWidth));
+      newTop = Math.max(0, Math.min(newTop, window.innerHeight - headerHeight));
+
+      panel.style.left = `${newLeft}px`;
+      panel.style.top = `${newTop}px`;
+    };
+
+    const handleMouseUp = () => {
+      isDragging = false;
+      panel.classList.remove('draftly-dragging');
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  });
+
   // ======== Body ========
   const body = document.createElement('div');
   body.className = 'draftly-panel-body';
@@ -1103,13 +1163,17 @@ async function openPanel(commentBox, iconEl, postContext) {
   const resultsEl = document.createElement('div');
   resultsEl.className = 'draftly-variations';
 
-  generateBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
+  const triggerGenerate = () => {
     // Attach results area the first time
     if (!body.contains(resultsEl)) {
       body.appendChild(resultsEl);
     }
-    doGenerate(resultsEl, postContext, selectedLength, guidelineInput.value, emojiOn, questionOn, selectedTone, commentBox, panel, iconRect, generateBtn);
+    doGenerate(resultsEl, postContext, selectedLength, guidelineInput.value, emojiOn, questionOn, selectedTone, commentBox, panel, iconRect, generateBtn, triggerGenerate);
+  };
+
+  generateBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerGenerate();
   });
 
   body.appendChild(generateBtn);
