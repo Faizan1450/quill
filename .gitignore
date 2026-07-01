@@ -10,3 +10,6 @@ Thumbs.db
 *.local
 *.key
 credentials.json
+
+# Release distributions
+*.zip
