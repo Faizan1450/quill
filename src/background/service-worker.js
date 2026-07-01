@@ -235,7 +235,10 @@ async function callGemini(payload) {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: 0.9,
-      maxOutputTokens: 600
+      maxOutputTokens: 600,
+      thinkingConfig: {
+        thinkingBudget: 0
+      }
     },
   };
 
