@@ -161,8 +161,23 @@ async function extractPostContext(commentBox) {
         const parentList = link.closest('[role="list"]');
         if (parentList && parentList.querySelectorAll('[role="listitem"]').length > 1) return false;
       }
-      return hasDegreeMarker(link);
+      return true; // We filter for degree marker in next step, let's keep all for logging
     });
+
+  log('[extract] Step 3 Debug: found profile links:', allProfileLinks.map(link => {
+    const parentText = link.parentElement ? link.parentElement.textContent.trim().replace(/\s+/g, ' ') : '';
+    const gpText = (link.parentElement && link.parentElement.parentElement) ? link.parentElement.parentElement.textContent.trim().replace(/\s+/g, ' ') : '';
+    return {
+      text: link.textContent.trim().replace(/\s+/g, ' '),
+      href: link.getAttribute('href'),
+      parentText: parentText.slice(0, 100),
+      grandparentText: gpText.slice(0, 100),
+      hasMarker: hasDegreeMarker(link)
+    };
+  }));
+
+  // Now actually filter to those that have the degree marker
+  const validProfileLinks = allProfileLinks.filter(link => hasDegreeMarker(link));
 
   let authorLink = null;
   let authorName = null;
@@ -170,15 +185,15 @@ async function extractPostContext(commentBox) {
   if (activityAnnotationDetected) {
     // On activity cards: skip the FIRST degree-marked profile (that's the actor who engaged),
     // use the SECOND degree-marked profile (that's the original post author).
-    if (allProfileLinks.length >= 2) {
-      authorLink = allProfileLinks[1];
+    if (validProfileLinks.length >= 2) {
+      authorLink = validProfileLinks[1];
       log('[extract] STEP 3 OK (activity card): using 2nd profile as real author');
     } else {
-      log('[extract] STEP 3 FAIL (activity card): only', allProfileLinks.length, 'degree-marked profile(s) found — cannot identify nested post author');
+      log('[extract] STEP 3 FAIL (activity card): only', validProfileLinks.length, 'degree-marked profile(s) found — cannot identify nested post author');
       return { author: null, body: null, extractionError: 'step3' };
     }
   } else {
-    authorLink = allProfileLinks[0] || null;
+    authorLink = validProfileLinks[0] || null;
   }
 
   if (authorLink) {
