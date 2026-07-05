@@ -204,6 +204,7 @@ function extractPostContext(commentBox) {
     }
 
     if (!bodyText) {
+      log('[extract] STEP 4 FAIL (feed): p-tag texts found:', allPs.map(p => p.textContent.trim()));
       log('[extract] STEP 4 FAIL (feed): no body paragraph found');
       return { author: null, body: null, extractionError: 'step4' };
     }
