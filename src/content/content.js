@@ -75,165 +75,157 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 /**
  * Extracts the post body and author name for the post associated with the clicked comment box.
- * Scoped and isolated to prevent selector leakage.
- * 
- * @param {HTMLElement} commentBox - The target comment input box element.
- * @returns {Object} { author: string|null, body: string|null }
+ *
+ * Architecture detection:
+ *  - aria-label "Text editor for creating comment" → FEED (tiptap/ProseMirror, role="listitem" container)
+ *  - aria-label "Text editor for creating content" → STANDALONE (ql-editor, role="article" container)
+ *
+ * Anchors ONLY on ARIA roles, aria-labels, href patterns, and structural position.
+ * NO hashed CSS class names used as selectors.
+ *
+ * @param {HTMLElement} commentBox
+ * @returns {{ author: string|null, body: string|null, extractionError: string|null }}
  */
 function extractPostContext(commentBox) {
-  try {
-    const isStandalone = commentBox.classList.contains('ql-editor') || 
-                          location.pathname.includes('/feed/update/');
-
-    if (isStandalone) {
-      log("extracting standalone layout post context...");
-      
-      // 1. Locate the post actor container (outside comments)
-      const actorContainers = document.querySelectorAll('.update-components-actor__container');
-      let actorContainer = null;
-      for (const c of actorContainers) {
-        if (!c.closest('article.comments-comment-entity') && !c.closest('[componentkey^="commentsSectionContainer"]')) {
-          actorContainer = c;
-          break;
-        }
-      }
-
-      let authorName = null;
-      if (actorContainer) {
-        const titleEl = actorContainer.querySelector('.update-components-actor__title');
-        if (titleEl) {
-          // 2. Pick the first direct child span that is NOT the supplementary info span
-          const childSpans = titleEl.querySelectorAll(':scope > span');
-          let nameSpan = null;
-          for (const s of childSpans) {
-            if (!s.classList.contains('update-components-actor__supplementary-actor-info')) {
-              nameSpan = s;
-              break;
-            }
-          }
-
-          if (nameSpan) {
-            // Try the nested span[dir="ltr"] inside the name span first
-            const ltrEl = nameSpan.querySelector('span[dir="ltr"]');
-            if (ltrEl && ltrEl.textContent.trim()) {
-              authorName = ltrEl.textContent.trim();
-            } else if (nameSpan.textContent.trim()) {
-              authorName = nameSpan.textContent.trim().split('\n')[0].trim();
-            }
-          }
-        }
-
-        // 3. Defensive cleanup: strip trailing degree badges / "Verified"
-        if (authorName) {
-          authorName = authorName.replace(/\s*[•·]\s*\d+(?:nd|rd|th|st)?\+?\s*$/i, '').trim();
-          authorName = authorName.replace(/\s*[•·]\s*Verified\s*$/i, '').trim();
-          authorName = authorName.replace(/\s{2,}/g, ' ').trim();
-        }
-
-        // 4. Last-resort fallback: aria-label on the meta-link
-        if (!authorName && actorContainer) {
-          const metaLink = actorContainer.querySelector('a.update-components-actor__meta-link[aria-label]');
-          if (metaLink) {
-            let label = metaLink.getAttribute('aria-label') || '';
-            // aria-label is like "View Mansi Nair's profile" or "View: Mansi Nair ..."
-            label = label.replace(/^View:?\s*/i, '');
-            label = label.replace(/[''']s\s+profile.*$/i, '').trim();
-            label = label.replace(/\s*[•·]\s*Verified.*$/i, '').trim();
-            label = label.replace(/\s*[•·]\s*\d+(?:nd|rd|th|st)?\+?.*$/i, '').trim();
-            if (label) authorName = label;
-          }
-        }
-      }
-
-      // 2. Locate the post body in the update description container (outside comments list)
-      const bodyContainer = document.querySelector(
-        '.feed-shared-update-v2__description .update-components-text, ' +
-        '.feed-shared-update-v2__description .update-components-update-v2__commentary, ' +
-        '.feed-shared-inline-show-more-text .update-components-text'
-      );
-      
-      let bodyText = null;
-      if (bodyContainer) {
-        const clone = bodyContainer.cloneNode(true);
-        
-        // Remove expand button
-        const expandButton = clone.querySelector('[data-testid="expandable-text-button"], button.feed-shared-inline-show-more-text__see-more-less-toggle');
-        if (expandButton) {
-          expandButton.remove();
-        }
-        
-        bodyText = clone.innerText;
-        
-        // Strip trailing run of hashtags
-        bodyText = bodyText.replace(/(?:\s*#[^\s#]+)+\s*$/, '').trim();
-
-        // Cap length to prevent sending huge prompts
-        if (bodyText.length > 4000) {
-          bodyText = bodyText.slice(0, 4000) + '...';
-        }
-      }
-
-      return { author: authorName, body: bodyText };
-    } else {
-      // Feed layout
-      // 1. Walk up to the main post wrapper
-      const postWrapper = commentBox.closest('[role="listitem"]');
-      if (!postWrapper) {
-        log("extraction failed — closest [role='listitem'] not found");
-        return { author: null, body: null };
-      }
-
-      // 2. Locate the post body container
-      const bodyContainer = postWrapper.querySelector('[componentkey^="feed-commentary"] [data-testid="expandable-text-box"]');
-      let bodyText = null;
-
-      if (bodyContainer) {
-        const clone = bodyContainer.cloneNode(true);
-        
-        const expandButton = clone.querySelector('[data-testid="expandable-text-button"]');
-        if (expandButton) {
-          expandButton.remove();
-        }
-
-        bodyText = clone.innerText;
-
-        bodyText = bodyText.replace(/(?:\s*#[^\s#]+)+\s*$/, '').trim();
-
-        if (bodyText.length > 4000) {
-          bodyText = bodyText.slice(0, 4000) + '...';
-        }
-      }
-
-      // 3. Extract the post author name — STRICT header-only scoping.
-      let authorName = null;
-      if (bodyContainer) {
-        const allLinks = postWrapper.querySelectorAll('a');
-
-        const headerOnlyLinks = Array.from(allLinks).filter(link => {
-          if (link.closest('[componentkey^="commentsSectionContainer"]')) return false;
-          if (link.closest('[componentkey^="replaceableComment_"]')) return false;
-          const isPrior = !!(link.compareDocumentPosition(bodyContainer) & Node.DOCUMENT_POSITION_FOLLOWING);
-          const isInside = bodyContainer.contains(link);
-          return isPrior && !isInside;
-        });
-
-        const profileLink = headerOnlyLinks.find(link => {
-          const href = link.getAttribute('href') || '';
-          const text = link.innerText.trim();
-          return text && (href.includes('/in/') || href.includes('/company/') || href.includes('/school/'));
-        });
-
-        if (profileLink) {
-          authorName = profileLink.innerText.trim().split('\n')[0].trim();
-        }
-      }
-
-      return { author: authorName, body: bodyText };
-    }
-  } catch (error) {
-    log("extraction error", error);
-    return { author: null, body: null };
+  // STEP 1 — DETECT ARCHITECTURE
+  const ariaLabel = commentBox.getAttribute('aria-label') || '';
+  let arch = null;
+  if (ariaLabel.includes('Text editor for creating comment')) {
+    arch = 'feed';
+  } else if (ariaLabel.includes('Text editor for creating content') || commentBox.classList.contains('ql-editor')) {
+    arch = 'standalone';
+  } else {
+    log('[extract] STEP 1 FAIL: unknown editor aria-label:', ariaLabel);
+    return { author: null, body: null, extractionError: 'step1' };
   }
+  log('[extract] STEP 1 OK: arch =', arch);
+
+  // STEP 2 — FIND CONTAINER
+  const containerRole = arch === 'feed' ? '[role="listitem"]' : '[role="article"]';
+  const container = commentBox.closest(containerRole);
+  if (!container) {
+    log('[extract] STEP 2 FAIL: container', containerRole, 'not found');
+    return { author: null, body: null, extractionError: 'step2' };
+  }
+  log('[extract] STEP 2 OK: container found', container);
+
+  // STEP 3 — EXTRACT AUTHOR
+  // Candidates: all a[href*="/in/"] links with non-empty text, in DOM order.
+  // Accept the FIRST that has a degree marker ("• 1st", "• 2nd", "• 3rd") on itself or
+  // a nearby sibling — this identifies the real post author and rejects social-proof
+  // annotations ("X commented", "X likes this") which never have a degree marker.
+  const DEGREE_RE = /[•·]\s*(?:1st|2nd|3rd|\d+(?:st|nd|rd|th))/i;
+
+  function hasDegreeMarker(el) {
+    // Check the link's own text
+    if (DEGREE_RE.test(el.textContent)) return true;
+    // Check the parent container's text (degree badge is often a sibling span)
+    const parent = el.parentElement;
+    if (parent && DEGREE_RE.test(parent.textContent)) return true;
+    // Walk up one more level
+    const grandparent = parent && parent.parentElement;
+    if (grandparent && DEGREE_RE.test(grandparent.textContent)) return true;
+    return false;
+  }
+
+  // Restrict to elements BEFORE the comment box (exclude comment section)
+  const allProfileLinks = Array.from(container.querySelectorAll('a[href*="/in/"]'));
+  const authorLink = allProfileLinks.find(link => {
+    const text = (link.textContent || '').trim();
+    if (!text) return false;
+    // Reject links inside the comments section
+    if (link.closest('[role="list"]') && link.compareDocumentPosition(commentBox) & Node.DOCUMENT_POSITION_FOLLOWING) {
+      // This link is INSIDE a list that precedes the comment box — likely a comment
+      // Only skip if the list is a comments list (has multiple comment items)
+      const parentList = link.closest('[role="list"]');
+      if (parentList && parentList.querySelectorAll('[role="listitem"]').length > 1) return false;
+    }
+    return hasDegreeMarker(link);
+  });
+
+  let authorName = null;
+  if (authorLink) {
+    // Take first line only, strip degree badge
+    authorName = (authorLink.textContent || '').trim().split('\n')[0].trim();
+    authorName = authorName.replace(/\s*[•·]\s*(?:1st|2nd|3rd|\d+(?:st|nd|rd|th))\+?\s*/gi, '').trim();
+    authorName = authorName.replace(/\s{2,}/g, ' ').trim();
+    log('[extract] STEP 3 OK: author =', authorName);
+  } else {
+    log('[extract] STEP 3 FAIL: no /in/ link with degree marker found');
+    return { author: null, body: null, extractionError: 'step3' };
+  }
+
+  // STEP 4 — EXTRACT BODY
+  let bodyText = null;
+
+  if (arch === 'feed') {
+    // Collect all <p> tags in the container that are NOT inside the comment box
+    const allPs = Array.from(container.querySelectorAll('p')).filter(p => !commentBox.contains(p) && !p.closest('[role="list"]'));
+
+    // Find timestamp paragraph (matches "57m", "21h •", "2d", "1w", etc.)
+    const TIMESTAMP_RE = /^\s*\d+\s*[smhdw]\w{0,2}\s*(?:[•·]\s*(?:Edited)?\s*[•·]?)?\s*$/i;
+    let tsIndex = -1;
+    for (let i = 0; i < allPs.length; i++) {
+      const t = (allPs[i].textContent || '').trim();
+      if (TIMESTAMP_RE.test(t)) {
+        tsIndex = i;
+        break;
+      }
+    }
+
+    if (tsIndex >= 0 && tsIndex + 1 < allPs.length) {
+      // Body = paragraph(s) after the timestamp
+      const REACTION_RE = /^\d[\d,]*\s*(reaction|comment|repost|like|share)/i;
+      let bodyParts = [];
+      for (let i = tsIndex + 1; i < allPs.length; i++) {
+        const t = (allPs[i].textContent || '').trim();
+        if (!t) break;
+        if (REACTION_RE.test(t)) break;
+        bodyParts.push(t);
+        // Stop after gathering enough content (avoid bleeding into comments)
+        if (bodyParts.join(' ').length > 500 && i > tsIndex + 2) break;
+      }
+      if (bodyParts.length > 0) {
+        bodyText = bodyParts.join(' ').trim();
+        log('[extract] STEP 4 OK (timestamp anchor): body length =', bodyText.length);
+      }
+    }
+
+    // Fallback: last <p> with length > 10 that isn't a timestamp
+    if (!bodyText) {
+      const fallbackP = [...allPs].reverse().find(p => {
+        const t = (p.textContent || '').trim();
+        return t.length > 10 && !TIMESTAMP_RE.test(t);
+      });
+      if (fallbackP) {
+        bodyText = (fallbackP.textContent || '').trim();
+        log('[extract] STEP 4 OK (fallback p): body length =', bodyText.length);
+      }
+    }
+
+    if (!bodyText) {
+      log('[extract] STEP 4 FAIL (feed): no body paragraph found');
+      return { author: null, body: null, extractionError: 'step4' };
+    }
+  } else {
+    // STANDALONE — only use stable BEM selectors for post body, no generic fallback
+    const bodyEl = container.querySelector('.update-components-text, .feed-shared-update-v2__description');
+    if (!bodyEl) {
+      log('[extract] STEP 4 FAIL (standalone): .update-components-text not found');
+      return { author: null, body: null, extractionError: 'step4' };
+    }
+    const clone = bodyEl.cloneNode(true);
+    // Remove expand buttons
+    clone.querySelectorAll('button').forEach(b => b.remove());
+    bodyText = (clone.textContent || '').replace(/(?:\s*#[^\s#]+)+\s*$/, '').trim();
+    log('[extract] STEP 4 OK (standalone): body length =', bodyText.length);
+  }
+
+  // Trim hashtags + cap
+  bodyText = bodyText.replace(/(?:\s*#[^\s#]+)+\s*$/, '').trim();
+  if (bodyText.length > 4000) bodyText = bodyText.slice(0, 4000) + '...';
+
+  return { author: authorName, body: bodyText, extractionError: null };
 }
 
 /**
@@ -267,13 +259,13 @@ function createDraftlyIcon(commentBox) {
     log("icon clicked", commentBox);
 
     const postContext = extractPostContext(commentBox);
-    if (postContext.body) {
-      log("extracted:", postContext);
+    if (postContext.extractionError) {
+      log("extraction failed at", postContext.extractionError, "— opening panel with blocked state");
     } else {
-      log("extraction failed — post text not found");
+      log("extracted:", { author: postContext.author, bodyLen: postContext.body?.length });
     }
 
-    // Open the panel (Phase 3). openPanel is defined in the panel section below.
+    // Open the panel. openPanel is defined in the panel section below.
     openPanel(commentBox, btn, postContext);
   });
 
@@ -738,6 +730,20 @@ function renderVariationCards(resultsEl, variations, commentBox, regenerateFn) {
 async function doGenerate(resultsEl, postContext, length, guideline, emoji, endWithQuestion, tone, commentBox, panel, iconRect, generateBtn, triggerGenerate) {
   const openSettings = () => chrome.runtime.sendMessage({ action: 'openOptions' });
   const reloadPage = () => location.reload();
+
+  // STEP 5 HARD GUARD: block generation if extraction failed
+  if (postContext.extractionError || !postContext.body) {
+    log('[guard] STEP 5 FAIL: generation blocked due to extraction error:', postContext.extractionError || 'no body');
+    if (generateBtn) {
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="draftly-generate-icon">✨</span> Generate';
+    }
+    showInlineError(resultsEl, "Couldn't read this post. LinkedIn may have changed something — try refreshing.", [
+      { label: 'Reload Page', onClick: reloadPage }
+    ]);
+    requestAnimationFrame(() => positionPanel(panel, iconRect));
+    return;
+  }
 
   // 1. Fail fast: check if key is set before loading spinner
   let hasKey = false;
