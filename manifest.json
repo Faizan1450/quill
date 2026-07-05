@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Draftly",
+  "name": "Quill – Smart LinkedIn Replies",
   "version": "1.0.0",
-  "description": "Draft LinkedIn comments in your own writing style using Gemini API.",
+  "description": "Write your own thoughts from the ink of AI",
   "permissions": [
     "storage"
   ],
@@ -32,7 +32,7 @@
       "48": "icons/pink/icon48.png",
       "128": "icons/pink/icon128.png"
     },
-    "default_title": "Draftly Settings"
+    "default_title": "Quill Settings"
   },
   "icons": {
     "16": "icons/pink/icon16.png",

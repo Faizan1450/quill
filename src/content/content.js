@@ -248,7 +248,7 @@ function createDraftlyIcon(commentBox) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'draftly-btn';
-  btn.title = 'Generate comment with Draftly';
+  btn.title = 'Generate comment with Quill';
 
   btn.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
@@ -558,15 +558,15 @@ function requestVariations(postContext, length, guideline, emoji, endWithQuestio
  */
 function errorMessage(code) {
   const messages = {
-    'no-key':          'No API key set. Add your free Gemini key in Draftly settings to start generating.',
-    'auth-error':      "Your API key was rejected. Check that it's correct and active in Draftly settings.",
+    'no-key':          'No API key set. Add your free Gemini key in Quill settings to start generating.',
+    'auth-error':      "Your API key was rejected. Check that it's correct and active in Quill settings.",
     'rate-limit':      "Rate limit reached. Gemini's free tier has a per-minute limit — wait a moment and try again.",
     'api-error':       'Gemini had a problem on its end. Try again in a moment.',
     'network-error':   "Couldn't reach Gemini. Check your internet connection and try again.",
     'empty-response':  'Gemini returned an empty response. Try Regenerate.',
     'parse-failure':   "Couldn't read the AI's response. Try Regenerate — if it keeps happening, try a shorter length.",
     'timeout':         'This is taking too long. Try again.',
-    'extension-error': 'Draftly was updated. Please refresh this LinkedIn tab to continue.',
+    'extension-error': 'Quill was updated. Please refresh this LinkedIn tab to continue.',
   };
   return messages[code] || 'Something went wrong — try Regenerate.';
 }
@@ -933,7 +933,7 @@ async function openPanel(commentBox, iconEl, postContext) {
   `;
   titleWrap.appendChild(headerIcon);
 
-  const titleText = document.createTextNode('Draftly');
+  const titleText = document.createTextNode('Quill');
   titleWrap.appendChild(titleText);
 
   // Status badge
