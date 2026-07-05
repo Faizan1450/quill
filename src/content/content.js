@@ -109,25 +109,34 @@ async function extractPostContext(commentBox) {
   }
   log('[extract] STEP 2 OK: container found', container);
 
+  // Define a helper to check if an element is inside comments section or the comment input
+  const commentsSection = container.querySelector('[componentkey^="commentsSectionContainer"], .comments-shared-comment-list, .comments-comments-list, [class*="comments-comments-list"]');
+  function isExcluded(el) {
+    if (commentBox.contains(el)) return true;
+    if (commentsSection && commentsSection.contains(el)) return true;
+    return false;
+  }
+
   // ACTIVITY-ANNOTATION PRE-CHECK (between Step 2 and Step 3)
   // LinkedIn renders "X commented on this" / "X reshared this" / "X likes this" cards where
   // the engaging person's profile card appears ABOVE the actual embedded post. Detect this and
   // locate the REAL nested post instead.
-  const ACTIVITY_RE = /^[\w\s\u00C0-\u024F,.'"-]+\s+(commented|reshared this|likes this|celebrated this|found this insightful|supports this)\.?\s*$/i;
   let activityAnnotationDetected = false;
   let activityActor = null; // the person who commented/reshared (skip this profile)
 
   // Scan the first few text nodes / short paragraphs near the top of the container
   const topTextEls = Array.from(container.querySelectorAll('p, span'))
-    .filter(el => !commentBox.contains(el) && !el.closest('[role="list"]'))
+    .filter(el => !isExcluded(el))
     .slice(0, 12); // only look at the first ~12 candidate elements
 
+  const ACTIVITY_WORDS = ["likes this", "commented", "reshared this", "celebrated this", "found this insightful", "supports this"];
+
   for (const el of topTextEls) {
-    const t = (el.textContent || '').trim();
-    if (t.length > 5 && t.length < 120 && ACTIVITY_RE.test(t)) {
+    const t = (el.textContent || '').trim().toLowerCase();
+    if (ACTIVITY_WORDS.some(word => t === word || t.endsWith(" " + word))) {
       activityAnnotationDetected = true;
-      activityActor = t;
-      log('[extract] Detected activity-annotation header: "' + t + '" — searching for nested original post.');
+      activityActor = (el.textContent || '').trim();
+      log('[extract] Detected activity-annotation header: "' + activityActor + '" — searching for nested original post.');
       break;
     }
   }
@@ -156,11 +165,7 @@ async function extractPostContext(commentBox) {
     .filter(link => {
       const text = (link.textContent || '').trim();
       if (!text) return false;
-      // Reject links inside the comments section
-      if (link.closest('[role="list"]') && link.compareDocumentPosition(commentBox) & Node.DOCUMENT_POSITION_FOLLOWING) {
-        const parentList = link.closest('[role="list"]');
-        if (parentList && parentList.querySelectorAll('[role="listitem"]').length > 1) return false;
-      }
+      if (isExcluded(link)) return false;
       return true; // We filter for degree marker in next step, let's keep all for logging
     });
 
@@ -197,9 +202,16 @@ async function extractPostContext(commentBox) {
   }
 
   if (authorLink) {
-    // Take first line only, strip degree badge
-    authorName = (authorLink.textContent || '').trim().split('\n')[0].trim();
+    // Try to extract clean name from nested strong element first
+    const strongEl = authorLink.querySelector('strong');
+    if (strongEl) {
+      authorName = strongEl.textContent.trim();
+    } else {
+      authorName = (authorLink.textContent || '').trim().split('\n')[0].trim();
+    }
+    // Clean up degree markers/verified
     authorName = authorName.replace(/\s*[•·]\s*(?:1st|2nd|3rd|\d+(?:st|nd|rd|th))\+?\s*/gi, '').trim();
+    authorName = authorName.replace(/\s*[•·]\s*Verified.*$/i, '').trim();
     authorName = authorName.replace(/\s{2,}/g, ' ').trim();
     log('[extract] STEP 3 OK: author =', authorName);
   } else {
@@ -250,13 +262,13 @@ async function extractPostContext(commentBox) {
 
     // First attempt: collect <p> tags outside comment box and comments list
     let allPs = Array.from(container.querySelectorAll('p'))
-      .filter(p => !commentBox.contains(p) && !p.closest('[role="list"]') && elementIsAfterAnchor(p, domAnchor));
+      .filter(p => !isExcluded(p) && elementIsAfterAnchor(p, domAnchor));
 
     // RETRY: if zero <p> tags found, LinkedIn may not have hydrated yet — wait 300ms and re-query
     if (allPs.length === 0) {
       await new Promise(r => setTimeout(r, 300));
       allPs = Array.from(container.querySelectorAll('p'))
-        .filter(p => !commentBox.contains(p) && !p.closest('[role="list"]') && elementIsAfterAnchor(p, domAnchor));
+        .filter(p => !isExcluded(p) && elementIsAfterAnchor(p, domAnchor));
       log('[extract] STEP 4 retry after 300ms, p-tag count:', allPs.length);
     }
 
@@ -269,8 +281,7 @@ async function extractPostContext(commentBox) {
     if (!bodyText) {
       const spanDivs = Array.from(container.querySelectorAll('span, div'))
         .filter(el => {
-          if (commentBox.contains(el)) return false;
-          if (el.closest('[role="list"]')) return false;
+          if (isExcluded(el)) return false;
           if (!elementIsAfterAnchor(el, domAnchor)) return false;
           // Only leaf-ish elements (avoid giant wrapper divs)
           const t = (el.textContent || '').trim();
