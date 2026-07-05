@@ -181,25 +181,25 @@ async function extractPostContext(commentBox) {
     };
   }));
 
-  // Now actually filter to those that have the degree marker
-  const validProfileLinks = allProfileLinks.filter(link => hasDegreeMarker(link));
-
-  let authorLink = null;
-  let authorName = null;
-
-  if (activityAnnotationDetected) {
-    // On activity cards: skip the FIRST degree-marked profile (that's the actor who engaged),
-    // use the SECOND degree-marked profile (that's the original post author).
-    if (validProfileLinks.length >= 2) {
-      authorLink = validProfileLinks[1];
-      log('[extract] STEP 3 OK (activity card): using 2nd profile as real author');
-    } else {
-      log('[extract] STEP 3 FAIL (activity card): only', validProfileLinks.length, 'degree-marked profile(s) found — cannot identify nested post author');
-      return { author: null, body: null, extractionError: 'step3' };
+  // Filter out any profile links belonging to the activity actor (the annotation)
+  const nonActorProfileLinks = allProfileLinks.filter(link => {
+    const parentText = link.parentElement ? link.parentElement.textContent || '' : '';
+    const gpText = (link.parentElement && link.parentElement.parentElement) ? link.parentElement.parentElement.textContent || '' : '';
+    
+    // Check if parent or grandparent text matches: commented, likes this, reshared, celebrated, etc.
+    const ANNOTATION_RE = /(commented|likes this|reshared|celebrated|insightful|supports)/i;
+    if (ANNOTATION_RE.test(parentText) || ANNOTATION_RE.test(gpText)) {
+      log('[extract] Step 3: excluding link belonging to activity actor (annotation text matched):', link.textContent.trim());
+      return false;
     }
-  } else {
-    authorLink = validProfileLinks[0] || null;
-  }
+    return true;
+  });
+
+  // Now actually filter to those that have the degree marker
+  const validProfileLinks = nonActorProfileLinks.filter(link => hasDegreeMarker(link));
+
+  let authorLink = validProfileLinks[0] || null;
+  let authorName = null;
 
   if (authorLink) {
     // Try to extract clean name from nested strong element first
@@ -257,8 +257,8 @@ async function extractPostContext(commentBox) {
   }
 
   if (arch === 'feed') {
-    // For activity cards, scope to DOM elements after the real author link
-    const domAnchor = activityAnnotationDetected ? authorLink : null;
+    // Scope body elements to those physically located after the author link
+    const domAnchor = authorLink;
 
     // First attempt: collect <p> tags outside comment box and comments list
     let allPs = Array.from(container.querySelectorAll('p'))
