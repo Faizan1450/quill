@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Quill</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       Design System & Variables
+       ============================================================ */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      --surface: #ffffff;
+      --surface-border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent: #ec4899; /* Pink brand accent */
+      --accent-hover: #db2777;
+      --accent-glow: rgba(236, 72, 153, 0.15);
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(226, 232, 240, 0.8);
+      --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-gradient: linear-gradient(135deg, #0b1329 0%, #080b11 100%);
+        --surface: #131c31;
+        --surface-border: #1e293b;
+        --text-main: #f1f5f9;
+        --text-muted: #94a3b8;
+        --accent: #f472b6; /* Lighter pink for dark mode contrast */
+        --accent-hover: #ec4899;
+        --accent-glow: rgba(244, 114, 182, 0.2);
+        --glass-bg: rgba(19, 28, 49, 0.6);
+        --glass-border: rgba(30, 41, 59, 0.8);
+        --card-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    /* ============================================================
+       Base Reset & Styles
+       ============================================================ */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      padding: 60px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Decorative blurred shapes behind background */
+    .blur-blob {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      z-index: -1;
+      filter: blur(40px);
+      pointer-events: none;
+    }
+
+    .blob-1 { top: -100px; left: -100px; }
+    .blob-2 { bottom: 100px; right: -100px; }
+
+    /* ============================================================
+       Header & Branding
+       ============================================================ */
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      max-width: 600px;
+      animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .brand-logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px var(--accent-glow);
+      transition: transform 0.3s ease;
+    }
+
+    .brand-logo-wrap:hover {
+      transform: scale(1.08) rotate(5deg);
+    }
+
+    .brand-logo-wrap svg {
+      width: 36px;
+      height: 36px;
+      fill: #ffffff;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--text-main) 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* ============================================================
+       Content Container & Cards
+       ============================================================ */
+    main {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 24px;
+      background: var(--accent);
+      border-radius: 3px;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    p strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .policy-points {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .policy-point {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .point-icon {
+      background: var(--accent-glow);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      font-weight: 600;
+    }
+
+    .point-content h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+
+    .point-content p {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+
+    /* ============================================================
+       Developer Card Section
+       ============================================================ */
+    .developer-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+      border: 1px solid var(--glass-border);
+      background: linear-gradient(180deg, var(--surface) 0%, rgba(255, 255, 255, 0.05) 100%);
+    }
+
+    .dev-title-label {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .dev-name {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 4px;
+    }
+
+    .dev-role {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .dev-bio {
+      max-width: 550px;
+      font-size: 0.95rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      background: var(--surface);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .social-link:hover {
+      color: #ffffff;
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px var(--accent-glow);
+    }
+
+    /* ============================================================
+       Animations & Transitions
+       ============================================================ */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ============================================================
+       Footer
+       ============================================================ */
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      body {
+        padding: 40px 16px;
+      }
+      .card {
+        padding: 24px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Decorative blur circles -->
+  <div class="blur-blob blob-1"></div>
+  <div class="blur-blob blob-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-logo-wrap">
+      <!-- Quill Logo Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+        <path d="M 36 100 L 44 92 C 46 88, 48 84, 51 79 C 55 69, 61 58, 70 49 C 79 40, 88 33, 97 28 C 99 27, 101 28, 100 31 C 95 45, 88 57, 79 66 C 83 65, 87 63, 91 60 C 84 69, 76 76, 67 81 C 60 85, 54 87, 49 90 L 41 97 Z"/>
+        <path d="M 36 100 L 29 107 L 33 110 L 39 104 Z"/>
+      </svg>
+    </div>
+    <h1>Quill</h1>
+    <p class="tagline">Write your own thoughts from the ink of AI</p>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    
+    <!-- Privacy Policy Card -->
+    <section class="card">
+      <h2>Privacy Policy</h2>
+      <p><strong>Quill – Smart LinkedIn Replies</strong> is committed to user privacy. Our philosophy is simple: <strong>your data is yours alone.</strong></p>
+      
+      <ul class="policy-points">
+        
+        <li class="policy-point">
+          <div class="point-icon">1</div>
+          <div class="point-content">
+            <h3>Zero Server Operations</h3>
+            <p>Quill does not operate any databases, analytical servers, or third-party storage clusters. The developer cannot see, access, collect, or store any of your inputs, preferences, or generated comments.</p>
+          </div>
+        </li>
+
+        <li class="policy-point">
+          <div class="point-icon">2</div>
+          <div class="point-content">
+            <h3>Local-Only Preference Storage</h3>
+            <p>Your API key, configured tone, length, writing style descriptions, and custom comment examples are saved strictly on your local device inside your browser's extension storage (local storage). They never leave your machine except during generation.</p>
+          </div>
+        </li>
+
+        <li class="policy-point">
+          <div class="point-icon">3</div>
+          <div class="point-content">
+            <h3>Direct Gemini API Transmission</h3>
+            <p>When you click generate, the post content is packaged alongside your API key and sent directly from your browser to Google's Gemini API endpoints. The request goes directly to Google; there are no proxy servers or intermediaries involved.</p>
+          </div>
+        </li>
+
+        <li class="policy-point">
+          <div class="point-icon">4</div>
+          <div class="point-content">
+            <h3>No Analytics or Tracking</h3>
+            <p>We do not use Google Analytics, cookies, telemetry tracking, or advertisements. Quill does not monitor how or when you use the extension.</p>
+          </div>
+        </li>
+
+        <li class="policy-point">
+          <div class="point-icon">5</div>
+          <div class="point-content">
+            <h3>Contact & Support</h3>
+            <p>If you have any questions about this privacy statement, please email us directly at <a href="mailto:syedfaizanali1450+quill@gmail.com" style="color: var(--accent); text-decoration: none; font-weight: 500;">syedfaizanali1450+quill@gmail.com</a>.</p>
+          </div>
+        </li>
+
+      </ul>
+    </section>
+
+    <!-- Developer Card -->
+    <section class="card developer-card">
+      <div>
+        <span class="dev-title-label">Meet the Developer</span>
+        <h3 class="dev-name">Syed Faizan Ali</h3>
+        <p class="dev-role">Integration Developer at Accenture</p>
+        <p class="dev-bio">I build practical, privacy-first tools to simplify and automate daily workflows. Check out my other creations or connect with me via the links below.</p>
+      </div>
+
+      <div class="social-links">
+        <a href="https://www.linkedin.com/in/faizan1450/" target="_blank" rel="noopener noreferrer" class="social-link" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </a>
+        <a href="https://www.instagram.com/faizan_1450/" target="_blank" rel="noopener noreferrer" class="social-link" title="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        </a>
+        <a href="https://github.com/Faizan1450" target="_blank" rel="noopener noreferrer" class="social-link" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        </a>
+        <a href="https://faizan1450.github.io/Portfolio/" target="_blank" rel="noopener noreferrer" class="social-link" title="Portfolio">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 Quill. All rights reserved. Built with ❤️ by <a href="https://www.linkedin.com/in/faizan1450/" target="_blank" rel="noopener noreferrer">Syed Faizan Ali</a>.</p>
+  </footer>
+
+</body>
+</html>
