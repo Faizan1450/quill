@@ -201,6 +201,34 @@ async function extractPostContext(commentBox) {
   let authorLink = validProfileLinks[0] || null;
   let authorName = null;
 
+  if (!authorLink) {
+    // Fallback: check for company page / school page links
+    const companyLinks = Array.from(container.querySelectorAll('a[href*="/company/"], a[href*="/school/"]'))
+      .filter(link => {
+        const text = (link.textContent || '').trim();
+        if (!text) return false;
+        if (isExcluded(link)) return false;
+        return true;
+      });
+
+    // Filter out any company links belonging to the activity actor (the annotation)
+    const nonActorCompanyLinks = companyLinks.filter(link => {
+      const parentText = link.parentElement ? link.parentElement.textContent || '' : '';
+      const gpText = (link.parentElement && link.parentElement.parentElement) ? link.parentElement.parentElement.textContent || '' : '';
+      const ANNOTATION_RE = /(commented|likes this|reshared|celebrated|insightful|supports)/i;
+      if (ANNOTATION_RE.test(parentText) || ANNOTATION_RE.test(gpText)) {
+        log('[extract] Step 3: excluding company link belonging to activity actor:', link.textContent.trim());
+        return false;
+      }
+      return true;
+    });
+
+    authorLink = nonActorCompanyLinks[0] || null;
+    if (authorLink) {
+      log('[extract] Step 3: fallback to company/school profile link');
+    }
+  }
+
   if (authorLink) {
     // Try to extract clean name from nested strong element first
     const strongEl = authorLink.querySelector('strong');
@@ -212,10 +240,12 @@ async function extractPostContext(commentBox) {
     // Clean up degree markers/verified
     authorName = authorName.replace(/\s*[•·]\s*(?:1st|2nd|3rd|\d+(?:st|nd|rd|th))\+?\s*/gi, '').trim();
     authorName = authorName.replace(/\s*[•·]\s*Verified.*$/i, '').trim();
+    // Also clean up trailing follower/school suffix details if any
+    authorName = authorName.replace(/\s*[•·]\s*\d+[\d,]*\s*followers.*$/i, '').trim();
     authorName = authorName.replace(/\s{2,}/g, ' ').trim();
     log('[extract] STEP 3 OK: author =', authorName);
   } else {
-    log('[extract] STEP 3 FAIL: no /in/ link with degree marker found');
+    log('[extract] STEP 3 FAIL: no personal profile with degree marker nor company profile found');
     return { author: null, body: null, extractionError: 'step3' };
   }
 
